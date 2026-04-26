@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user) {
       throw new HttpException('Token no valido', HttpStatus.UNAUTHORIZED);
     }
-    if (!user.isActive) {
+    if (!user.active) {
       throw new HttpException('Usuario inactivo', HttpStatus.UNAUTHORIZED);
     }
 

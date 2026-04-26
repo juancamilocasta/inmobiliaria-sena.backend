@@ -9,6 +9,7 @@ import { GetAllUserResponse } from './interfaces/users-responses.model';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 import * as bcrypt from 'bcrypt';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,22 +17,10 @@ export class UsersService {
   constructor(
     private readonly configCompanyService: ConfigCompanyService,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async createUser(createUserDto: CreateUserDto): Promise<ApiBasicResponse> {
     try {
-      const configCompany = await this.configCompanyService.getConfigCompany();
-      const findUsers = await this.userRepository.find({
-        where: {
-          isActive: 1,
-        },
-      });
-      if (findUsers.length >= configCompany.usersLimit) {
-        throw new HttpException(
-          'Se ha alcanzado el límite de usuarios activos',
-          HttpStatus.FORBIDDEN,
-        );
-      }
       const { password, ...newUserData } = createUserDto;
       const newUser = this.userRepository.create(newUserData);
       const salt = await bcrypt.genSalt();
@@ -58,7 +47,7 @@ export class UsersService {
       }
       throw new HttpException(
         error.message ||
-          'Error en el servidor. Por favor, inténtelo de nuevo más tarde',
+        'Error en el servidor. Por favor, inténtelo de nuevo más tarde',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -67,10 +56,7 @@ export class UsersService {
   async getAllusers(): Promise<GetAllUserResponse> {
     try {
       const findUsers = await this.userRepository.find({
-        relations: {
-          role: true,
-          documentType: true,
-        },
+
       });
 
       if (findUsers.length === 0) {
@@ -85,7 +71,7 @@ export class UsersService {
       this.logger.error(error);
       throw new HttpException(
         error.message ||
-          'Error en el servidor. Por favor, inténtelo de nuevo más tarde',
+        'Error en el servidor. Por favor, inténtelo de nuevo más tarde',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -96,25 +82,11 @@ export class UsersService {
     idUser: string,
   ): Promise<ApiBasicResponse> {
     try {
-      const configCompany = await this.configCompanyService.getConfigCompany();
-      const findUser = await this.userRepository.find({
-        where: {
-          isActive: 1,
-        },
-      });
+
       const findUserUpdate = await this.userRepository.findOneBy({
         idUser,
       });
-      if (
-        findUser.length >= configCompany.usersLimit &&
-        findUserUpdate.isActive === 0 &&
-        updateUserDto.isActive === 1
-      ) {
-        throw new HttpException(
-          'Se ha alcanzado el límite de usuarios activos, para activar este usuario debe desactivar un usuario existente',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+
       const { password, ...userData } = updateUserDto;
       const newDataUser = {
         ...findUserUpdate,
@@ -141,7 +113,62 @@ export class UsersService {
       this.logger.error(error);
       throw new HttpException(
         error.message ||
-          'Error en el servidor. Por favor, inténtelo de nuevo más tarde',
+        'Error en el servidor. Por favor, inténtelo de nuevo más tarde',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async updatePassword(
+    {
+      currentPassword,
+      newPassword
+    }: UpdatePasswordDto,
+    idUser: string,
+  ): Promise<ApiBasicResponse> {
+    try {
+
+      const findUserUpdate = await this.userRepository.findOne({
+        where: { idUser },
+        select: {
+          password: true,
+          idUser: true,
+          userNames: true,
+          lastName: true,
+          identification: true,
+          active: true,
+          dateCreated: true
+        }
+      });
+
+      const isValid = await bcrypt.compare(currentPassword, findUserUpdate.password);
+
+      if (!isValid) {
+        throw new HttpException(
+          'La contraseña actual es incorrecta',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const salt = await bcrypt.genSalt();
+      const hashPassaword = await bcrypt.hash(newPassword, salt);
+      findUserUpdate.password = hashPassaword;
+
+      const updateUser = await this.userRepository.save(findUserUpdate);
+
+      if (!updateUser) {
+        throw new HttpException(
+          'Error al actualizar el usuario',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return {
+        message: 'Contraseña actualizada correctamente',
+        statusCode: 200,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        error.message ||
+        'Error en el servidor. Por favor, inténtelo de nuevo más tarde',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

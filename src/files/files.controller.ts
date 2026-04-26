@@ -10,11 +10,14 @@ import {
   Res,
   StreamableFile,
   Get,
+  HttpException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { fileInterceptor } from 'src/interceptors/file.interceptor';
 import { FileTypeValidationPipe } from 'src/pipes/file-type-validation.pipe';
 import { fileTypesByExtension, MAX_FILE_SIZE } from 'src/config/file.config';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -22,7 +25,7 @@ import { CreateFileDto } from './dto/create-file.dto';
 
 @Controller('files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(private readonly filesService: FilesService) { }
 
   /*
   manejamos 4 carpetas
@@ -68,7 +71,22 @@ export class FilesController {
     }
     throw new BadRequestException('Tipo de servicio no reconocido');
   }
-
+  /* 
+    @Post('cloudinary')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadToCloudinary(@UploadedFile() file: Express.Multer.File) {
+      if (!file) {
+        throw new BadRequestException('Archivo no enviado en el campo file');
+      }
+      const result = await this.filesService.uploadFileToCloudinary(file);
+      return {
+        message: 'Archivo subido a Cloudinary correctamente',
+        url: result.url,
+        publicId: result.public_id,
+        raw: result.raw,
+      };
+    }
+   */
   @Get('/:idFileType/:fileName')
   getFile(
     @Param('idFileType') idFileType: string,

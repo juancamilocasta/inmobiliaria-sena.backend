@@ -24,7 +24,7 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async refreshToken(user: User) {
     try {
@@ -67,7 +67,7 @@ export class AuthService {
 
       return {
         statusCode: HttpStatus.OK,
-        user: { ...user, isActive: Boolean(user.isActive) },
+        user: { ...user, isActive: Boolean(user.active) },
         message: null,
       };
     } catch (error) {
@@ -85,7 +85,7 @@ export class AuthService {
 
       const userDB = await this.userRepository.findOne({
         where: { identification: user },
-        select: { idUser: true, identification: true, password: true },
+        select: { password: true }
       });
 
       if (!userDB) {
@@ -108,13 +108,10 @@ export class AuthService {
         where: {
           idUser: userDB.idUser,
         },
-        relations: {
-          role: true,
-          documentType: true,
-        },
       });
 
       const payload = { idUser: userDB.idUser };
+
       return {
         user: resUser,
         tokens: this.generateTokens(payload),

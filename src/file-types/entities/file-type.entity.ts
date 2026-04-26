@@ -1,6 +1,5 @@
 import { EventFile } from 'src/files/entities/event-files.entity';
 import { TransferFile } from 'src/files/entities/transfer-files.entity';
-import { SubFileType } from 'src/sub-file-types/entities/sub-file-type.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('fileTypes')
@@ -14,8 +13,6 @@ export class FileType {
   @Column('tinyint', { name: 'active' })
   active: boolean;
 
-  @OneToMany(() => SubFileType, (subFileType) => subFileType.fileType)
-  subFileTypes: SubFileType[];
 
   @OneToMany(() => TransferFile, (transferFile) => transferFile.fileType)
   transferFiles: TransferFile[];

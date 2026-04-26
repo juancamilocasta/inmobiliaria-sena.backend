@@ -6,7 +6,7 @@ import { AuthRefreshGuard } from './guards/authRefresh.guard';
 @Public()
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   loginAuth(@Body() loginAuthDto: LoginAuthDto) {
