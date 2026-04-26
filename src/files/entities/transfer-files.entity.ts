@@ -1,5 +1,4 @@
 import { FileType } from 'src/file-types/entities/file-type.entity';
-import { MedicalService } from 'src/medical-services/entities/medical-services.entity';
 import {
   Column,
   Entity,
@@ -23,12 +22,6 @@ export class TransferFile {
     default: () => 'CURRENT_TIMESTAMP',
   })
   dateCreated: string;
-  @ManyToOne(
-    () => MedicalService,
-    (medicalService) => medicalService.transferFiles,
-  )
-  @JoinColumn({ name: 'idMedicalService' })
-  medicalService: MedicalService;
 
   @ManyToOne(() => FileType, (fileType) => fileType.transferFiles)
   @JoinColumn({ name: 'idFileType' })

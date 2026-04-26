@@ -10,13 +10,12 @@ export class FileTypesService {
   constructor(
     @InjectRepository(FileType)
     private readonly FileTypeRepository: Repository<FileType>,
-  ) {}
+  ) { }
 
   async findAllFileTypes(): Promise<FileType[]> {
     try {
       const responseFileType = await this.FileTypeRepository.find({
         where: { active: true },
-        relations: { subFileTypes: true },
       });
       if (!responseFileType) {
         throw new HttpException(

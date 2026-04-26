@@ -1,5 +1,4 @@
 import { FileType } from 'src/file-types/entities/file-type.entity';
-import { PatientEventRegister } from 'src/patient-event-register/entities/patient-event-register.entity';
 import {
   Column,
   Entity,
@@ -24,12 +23,6 @@ export class PatientEventFile {
   })
   dateCreated: string;
 
-  @ManyToOne(
-    () => PatientEventRegister,
-    (patientEventRegister) => patientEventRegister.patienteventFiles,
-  )
-  @JoinColumn({ name: 'idPatientEventRegister' })
-  patientEventRegister: PatientEventRegister;
 
   @ManyToOne(() => FileType, (fileType) => fileType.transferFiles)
   @JoinColumn({ name: 'idFileType' })

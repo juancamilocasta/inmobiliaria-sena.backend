@@ -1,4 +1,3 @@
-import { Event } from 'src/events/entities/event.entity';
 import { FileType } from 'src/file-types/entities/file-type.entity';
 import {
   Column,
@@ -19,9 +18,6 @@ export class EventFile {
   @Column('int', { name: 'idFileType' })
   idFileType: number;
 
-  @ManyToOne(() => Event, (event) => event.eventFiles)
-  @JoinColumn({ name: 'idEvent' })
-  event: Event;
 
   @ManyToOne(() => FileType, (fileType) => fileType.transferFiles)
   @JoinColumn({ name: 'idFileType' })
