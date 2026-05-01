@@ -80,7 +80,7 @@ export class PropiertiesService {
     try {
       const propierties = await this.propiertyRepository.find({
         where: {
-          dateCreated: Between(dateStart, dateEnd)
+          dateCreated: Between(`${dateStart} 00:00:00`, `${dateEnd} 23:59:59`)
         },
         order: { dateCreated: 'DESC' },
         relations: {
