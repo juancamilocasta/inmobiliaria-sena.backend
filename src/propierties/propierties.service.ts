@@ -7,6 +7,7 @@ import { Between, Repository } from 'typeorm';
 import { PropiertyImagesService } from 'src/propierty-images/propierty-images.service';
 import { GetAllPropiertiesActivesFilterDto } from './dto/get-all-propierties-actives-filter.dto';
 import { GetAllPropiertyAdminDto } from './dto/get-all-propierty-admin.dto';
+import { pageToOffset } from 'src/utilities/pageToOffset';
 
 @Injectable()
 export class PropiertiesService {
@@ -120,7 +121,8 @@ export class PropiertiesService {
       const filters = [
         { idUbication: params?.idUbication, price: params?.priceStart && Between(params?.priceStart, params?.priceEnd), propiertyCode: params?.propiertyCode, idPropiertyType: params?.idPropiertyType, typeOperation: params?.typeOperation, active: 1 },
       ]
-      const propierties = await this.propiertyRepository.find({
+      const offset = pageToOffset(params.page, params.limit);
+      const getPropierties = await this.propiertyRepository.findAndCount({
         where:
           filters.filter(Boolean).length === 0 ? [
             { active: 1 }
@@ -131,8 +133,12 @@ export class PropiertiesService {
           propiertyType: true,
           propiertyState: true,
           propiertyImages: true
-        }
+        },
+        skip: offset,
+        take: params.limit
+
       });
+      const [propierties, total] = getPropierties;
       if (propierties.length === 0) {
         throw new HttpException(
           'No se encontraron propiedades. Por favor, inténtelo de nuevo más tarde',
@@ -141,6 +147,7 @@ export class PropiertiesService {
       }
       return {
         propierties,
+        total,
         statusCode: HttpStatus.OK
       };
     } catch (error) {

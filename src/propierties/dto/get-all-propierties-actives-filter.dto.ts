@@ -19,4 +19,8 @@ export class GetAllPropiertiesActivesFilterDto {
     @IsString()
     @IsOptional()
     readonly propiertyCode?: string;
+    @IsNumber()
+    readonly page: number;
+    @IsNumber()
+    readonly limit: number;
 }
