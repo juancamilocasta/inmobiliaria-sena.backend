@@ -36,7 +36,8 @@ export class Propierty {
     neighborhood: string;
     @Column('char', { name: 'propiertyCode', unique: true })
     propiertyCode: string;
-
+    @Column('varchar', { name: 'googleMapsUrl' })
+    googleMapsUrl: string;
     @OneToOne(() => Ubication, ubication => ubication.idUbication)
     @JoinColumn({ name: 'idUbication' })
     ubication: Ubication;

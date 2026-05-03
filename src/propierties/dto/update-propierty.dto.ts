@@ -34,6 +34,9 @@ export class UpdatePropiertyDto {
     @IsString()
     @IsOptional()
     readonly neighborhood?: string;
+    @IsOptional()
+    @IsString()
+    readonly googleMapsUrl: string;
     @IsNumber()
     @IsOptional()
     readonly active?: number;
