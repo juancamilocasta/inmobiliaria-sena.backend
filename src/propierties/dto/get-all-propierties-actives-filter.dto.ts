@@ -23,4 +23,7 @@ export class GetAllPropiertiesActivesFilterDto {
     readonly page: number;
     @IsNumber()
     readonly limit: number;
+    @IsNumber()
+    @IsOptional()
+    readonly available?: number;
 }
