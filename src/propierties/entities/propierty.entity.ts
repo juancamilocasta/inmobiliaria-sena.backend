@@ -38,6 +38,9 @@ export class Propierty {
     propiertyCode: string;
     @Column('varchar', { name: 'googleMapsUrl' })
     googleMapsUrl: string;
+    @Column('tinyint', { name: 'available' })
+    available: number;
+
     @OneToOne(() => Ubication, ubication => ubication.idUbication)
     @JoinColumn({ name: 'idUbication' })
     ubication: Ubication;

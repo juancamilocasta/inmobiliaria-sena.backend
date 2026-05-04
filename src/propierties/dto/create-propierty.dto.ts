@@ -29,4 +29,6 @@ export class CreatePropiertyDto {
     readonly neighborhood: string;
     @IsString()
     readonly googleMapsUrl: string;
+    @IsNumber()
+    readonly available: number;
 }

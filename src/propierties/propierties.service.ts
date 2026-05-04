@@ -119,7 +119,7 @@ export class PropiertiesService {
         );
       }
       const filters = [
-        { idUbication: params?.idUbication, price: params?.priceStart && Between(params?.priceStart, params?.priceEnd), propiertyCode: params?.propiertyCode, idPropiertyType: params?.idPropiertyType, typeOperation: params?.typeOperation, active: 1 },
+        { idUbication: params?.idUbication, price: params?.priceStart && Between(params?.priceStart, params?.priceEnd), propiertyCode: params?.propiertyCode, idPropiertyType: params?.idPropiertyType, typeOperation: params?.typeOperation, active: 1, available: params.available },
       ]
       const offset = pageToOffset(params.page, params.limit);
       const getPropierties = await this.propiertyRepository.findAndCount({

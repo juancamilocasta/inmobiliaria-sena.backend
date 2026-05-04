@@ -43,4 +43,7 @@ export class UpdatePropiertyDto {
     @IsArray()
     @IsOptional()
     readonly urlImages?: string[];
+    @IsOptional()
+    @IsNumber()
+    readonly available: number;
 }
