@@ -17,7 +17,7 @@ export class PropiertiesController {
   }
 
   @Post('admin')
-  getAllPropierties(@Body() getAllPropiertyAdminDto: any) {
+  getAllPropierties(@Body() getAllPropiertyAdminDto: GetAllPropiertyAdminDto) {
     return this.propiertiesService.getAllPropierties(getAllPropiertyAdminDto);
   }
   @Public()
