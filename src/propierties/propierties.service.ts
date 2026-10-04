@@ -3,7 +3,7 @@ import { CreatePropiertyDto } from './dto/create-propierty.dto';
 import { UpdatePropiertyDto } from './dto/update-propierty.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Propierty } from './entities/propierty.entity';
-import { Between, Repository } from 'typeorm';
+import { Between, ILike, Repository } from 'typeorm';
 import { PropiertyImagesService } from 'src/propierty-images/propierty-images.service';
 import { GetAllPropiertiesActivesFilterDto } from './dto/get-all-propierties-actives-filter.dto';
 import { GetAllPropiertyAdminDto } from './dto/get-all-propierty-admin.dto';
@@ -76,30 +76,93 @@ export class PropiertiesService {
     }
   }
 
-  async getAllPropierties({ dateStart, dateEnd }: GetAllPropiertyAdminDto) {
+  async getAllPropierties({
+    page,
+    limit,
+    dateStart,
+    dateEnd,
+    idUbication,
+    idPropiertyType,
+    idPropiertyState,
+    typeOperation,
+    propiertyCode,
+    active,
+    available,
+    priceStart,
+    priceEnd,
+    wordsFilter,
+  }: GetAllPropiertyAdminDto) {
     try {
-      const propierties = await this.propiertyRepository.find({
-        where: {
-          dateCreated: Between(`${dateStart} 00:00:00`, `${dateEnd} 23:59:59`)
-        },
+      if (
+        (dateStart && !dateEnd) ||
+        (!dateStart && dateEnd)
+      ) {
+        throw new HttpException(
+          'Para filtrar por fechas se debe ingresar la fecha de inicio y la fecha de fin',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if ((priceStart && !priceEnd) || (!priceStart && priceEnd)) {
+        throw new HttpException(
+          'El precio inicial y final deben ser proporcionados juntos',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const offset = pageToOffset(page, limit);
+
+      const baseFilter = {
+        ...(idUbication !== undefined && { idUbication }),
+        ...(idPropiertyType !== undefined && { idPropiertyType }),
+        ...(idPropiertyState !== undefined && { idPropiertyState }),
+        ...(typeOperation !== undefined && { typeOperation }),
+        ...(propiertyCode !== undefined && { propiertyCode: ILike(`%${propiertyCode}%`) }),
+        ...(active !== undefined && { active }),
+        ...(available !== undefined && { available }),
+        ...(priceStart !== undefined && { price: Between(priceStart, priceEnd) }),
+        ...(dateStart !== undefined && {
+          dateCreated: Between(
+            `${dateStart} 00:00:00`,
+            `${dateEnd} 23:59:59`,
+          ),
+        }),
+      };
+
+      const where = wordsFilter !== undefined
+        ? [
+            { ...baseFilter, descriptionPropierty: ILike(`%${wordsFilter}%`) },
+            { ...baseFilter, propiertyCode: ILike(`%${wordsFilter}%`) },
+          ]
+        : [baseFilter];
+
+      const getPropierties = await this.propiertyRepository.findAndCount({
+        where,
         order: { dateCreated: 'DESC' },
         relations: {
           ubication: true,
           propiertyType: true,
           propiertyState: true,
-          propiertyImages: true
-        }
+          propiertyImages: true,
+        },
+        skip: offset,
+        take: limit,
       });
+
+      const [propierties, total] = getPropierties;
+
       if (propierties.length === 0) {
         throw new HttpException(
           'No se encontraron propiedades. Por favor, inténtelo de nuevo más tarde',
-          HttpStatus.NOT_FOUND
-        )
+          HttpStatus.NOT_FOUND,
+        );
       }
+
       return {
         propierties,
-        statusCode: HttpStatus.OK
-      };;
+        total,
+        statusCode: HttpStatus.OK,
+      };
     } catch (error) {
       this.logger.error(`Error searching propierties: ${error.message}`);
       throw new HttpException(
